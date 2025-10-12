@@ -1,0 +1,57 @@
+import re, requests, torch 
+import torch.nn as nn 
+from bs4 import BeautifulSoup 
+from tensorflow.keras.utils import pad_sequences 
+from tensorflow.keras.preprocessing.text import Tokenizer 
+
+class ChunkerModel(nn.Module): 
+    def __init__(self, vocab_size, embedding_dim=100, hidden_dim=64): 
+        super().__init__() 
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True)
+        self.fc = nn.Linear(hidden_dim, 1) 
+        
+    def forward(self, x): 
+        embedded = self.embedding(x)
+        lstm_out, (h_n, c_n) = self.lstm(embedded)
+        return torch.sigmoid(self.fc(lstm_out[:, -1, :])) 
+
+def fetch_text(url): 
+    """Fetches text from a URL, using a User-Agent header to avoid 403 errors."""
+    # Add a User-Agent header to mimic a web browser
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    try:
+        # Pass the headers dictionary in the request
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching URL: {e}")
+        return ""
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    text_content = ' '.join(p.get_text() for p in soup.find_all('p'))
+    return re.sub(r'\s+', ' ', text_content).strip()
+
+def preprocess(text): 
+    """Tokenizes text and converts it into a fixed-length sequence of integers."""
+    tok = Tokenizer(num_words=5000) 
+    tok.fit_on_texts([text]) 
+    return pad_sequences(tok.texts_to_sequences([text]), maxlen=100, padding='post'), tok 
+
+def segment_text(url): 
+    """Fetches text from a URL and returns the first 5 segments (sentences)."""
+    text = fetch_text(url)
+    
+    if not text:
+        return ["Failed to fetch text."]
+        
+    # Splits the clean text by ". " and ensures each segment ends with a period.
+    return [s.strip() + '.' for s in text.split('. ') if s.strip()][:5] 
+
+wiki_url = "https://en.wikipedia.org/wiki/Natural_language_processing"
+
+print("Extracted Chunks:")
+extracted_chunks = segment_text(wiki_url)
+print(*extracted_chunks, sep="\n")

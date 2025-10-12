@@ -1,27 +1,26 @@
 import nltk
-from nltk.tag import HiddenMarkovModelTagger
 from nltk.corpus import treebank
-from nltk import word_tokenize
+from nltk.tag import hmm
+from nltk.probability import LidstoneProbDist
 
-try:
-    nltk.data.find('corpora/treebank')
-except nltk.downloader.DownloadError:
-    nltk.download('treebank')
-    
-try:
-    nltk.data.find('tokenizers/punkt')
-except nltk.downloader.DownloadError:
-    nltk.download('punkt')
+nltk.download('treebank')
+tagged_sentences = treebank.tagged_sents()
 
-corpus = treebank.tagged_sents()
-train_data = corpus[:3000]
-test_data = corpus[3000:]
+train_size = int(len(tagged_sentences) * 0.8)
+train_data = tagged_sentences[:train_size]
+test_data = tagged_sentences[train_size:]
 
-hmm_tagger = HiddenMarkovModelTagger.train(train_data)
+estimator = lambda fd, bins: LidstoneProbDist(fd, 0.1)
 
-sentence = input("Enter a sentence: ")
+# Train the HMM POS tagger
+trainer = hmm.HiddenMarkovModelTrainer()
+hmm_tagger = trainer.train_supervised(train_data, estimator=estimator)
 
-tokens = word_tokenize(sentence)
-tagged_sentence = hmm_tagger.tag(tokens)
+# Input sentence to tag
+input_sentence = input("Enter the Sentence:").split()
 
-print(tagged_sentence)
+# Tag the input sentence
+tagged_sentence = hmm_tagger.tag(input_sentence)
+
+print("Input Sentence:", input_sentence)
+print("Tagged Sentence:", tagged_sentence)

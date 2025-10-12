@@ -1,0 +1,67 @@
+from bs4 import BeautifulSoup 
+import spacy 
+
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    print("Error: The 'en_core_web_sm' model is not loaded. Please run 'python -m spacy download en_core_web_sm' in your terminal.")
+    exit()
+        
+def pos_tag_and_extract_info(text): 
+    doc = nlp(text) 
+    nouns = [] 
+    verbs = [] 
+    adjectives = [] 
+    entities = [] 
+    
+    for token in doc: 
+        if token.pos_ == "NOUN": 
+            nouns.append(token.text) 
+        elif token.pos_ == "VERB": 
+            verbs.append(token.text) 
+        elif token.pos_ == "ADJ": 
+            adjectives.append(token.text) 
+            
+    for entity in doc.ents: 
+        entities.append((entity.text, entity.label_)) 
+        
+    return nouns, verbs, adjectives, entities 
+
+web_document = """ 
+ 
+ 
+ 
+ 
+ This is an example web page. It contains some text with various parts of speech.
+ For example, "The cat jumps over the lazy dog" contains a noun, a verb, and prepositions.
+ 
+ 
+ 
+""" 
+
+def extract_text_from_html(html): 
+    soup = BeautifulSoup(html, 'html.parser') 
+    return soup.get_text(separator=' ', strip=True) 
+
+text_content = extract_text_from_html(web_document) 
+nouns, verbs, adjectives, entities = pos_tag_and_extract_info(text_content) 
+
+output_filename = "pos_tagging_extraction_results.txt"
+
+with open(output_filename, 'w', encoding='utf-8') as f:
+    f.write("--- spaCy POS Tagging and Entity Extraction Results ---\n")
+    f.write("-" * 50 + "\n")
+    f.write(f"Source Text:\n'{text_content}'\n\n")
+    
+    f.write(f"Nouns ({len(nouns)}): {nouns}\n") 
+    f.write(f"Verbs ({len(verbs)}): {verbs}\n") 
+    f.write(f"Adjectives ({len(adjectives)}): {adjectives}\n") 
+    f.write(f"Entities ({len(entities)}): {entities}\n")
+
+print(f"Results saved to {output_filename}")
+
+print("\n--- Console Output (Same as File) ---")
+print(f"Nouns: {nouns}") 
+print(f"Verbs: {verbs}") 
+print(f"Adjectives: {adjectives}") 
+print(f"Entities: {entities}")

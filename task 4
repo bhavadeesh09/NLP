@@ -1,26 +1,29 @@
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from nltk.probability import FreqDist
-nltk.download('punkt')
+from collections import Counter
+import string
+
+nltk.download('punkt_tab')
 nltk.download('stopwords')
-def load_document(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
-def tokenize_document(document):
-    tokens = word_tokenize(document)
-    return [word.lower() for word in tokens if word.isalpha()]
-def remove_stopwords(tokens):
-    stop_words = set(stopwords.words('english'))
-    return [word for word in tokens if word not in stop_words]
-def find_morphology(tokens):
-    fdist = FreqDist(tokens)
-    return fdist.most_common()
-document_path = '/content/NLP TASK 4.txt'
-document = load_document(document_path)
-tokens = tokenize_document(document)
-tokens_without_stopwords = remove_stopwords(tokens)
-morphology = find_morphology(tokens_without_stopwords)
-print("Morphology of the document:")
-for word, frequency in morphology:
-    print(f"{word}: {frequency}")
+
+text = """
+Hola, me llamo Ashok y soy de India. Actualmente estudio en la Universidad Veltech en Chennai.
+Mis cosas favoritas son bailar y jugar cricket. Todos los días escucho música.
+"""
+
+tokens = word_tokenize(text.lower())
+
+tokens = [word for word in tokens if word.isalpha()]
+
+stop_words = set(stopwords.words('spanish'))
+filtered_tokens = [word for word in tokens if word not in stop_words]
+
+# 4. Count frequency of remaining words
+freq_dist = Counter(filtered_tokens)
+
+# 5. Print the most common words
+most_common = freq_dist.most_common(10)
+print("Most frequent words (after stopword removal):")
+for word, freq in most_common:
+    print(f"{word}: {freq}")

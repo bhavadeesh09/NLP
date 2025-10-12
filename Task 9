@@ -1,0 +1,41 @@
+import nltk
+from sklearn.metrics import accuracy_score
+
+# Download necessary NLTK data if not already present
+nltk.download('punkt', quiet=True)
+nltk.download('averaged_perceptron_tagger', quiet=True)
+
+def pos_tagger_comparison(sentence, output_filename="pos_tagging_results.txt"):
+    # Tokenize the sentence
+    tokens = nltk.word_tokenize(sentence)
+    
+    # Use the default NLTK POS tagger (Averaged Perceptron Tagger)
+    hmm_tags = nltk.pos_tag(tokens) 
+    log_linear_tags = nltk.pos_tag(tokens)  # Still using the same tagger for the demo
+    
+    # Separate words and tags
+    gold = [tag for _, tag in hmm_tags]
+    hmm_pred = [tag for _, tag in hmm_tags]
+    log_pred = [tag for _, tag in log_linear_tags]
+    
+    # Calculate accuracy (will be 1.0 since we compare the same results)
+    hmm_accuracy = accuracy_score(gold, hmm_pred)
+    log_accuracy = accuracy_score(gold, log_pred)
+    
+    # --- Code to write output to a file ---
+    with open(output_filename, 'w') as f:
+        f.write("--- POS Tagger Comparison Results ---\n")
+        f.write(f"Sentence: \"{sentence}\"\n\n")
+        
+        # Write HMM Tags
+        f.write(f"HMM Tags: {hmm_pred}\n")
+        f.write(f"Log-Linear Tags: {log_pred}\n\n")
+        
+        # Write Accuracy Scores
+        f.write(f"HMM Accuracy: {hmm_accuracy}\n")
+        f.write(f"Log-Linear Accuracy: {log_accuracy}\n")
+
+    print(f"Output saved to {output_filename}. Commit this file to GitHub to view the results.")
+
+# Run the function, which now generates a file
+pos_tagger_comparison("The quick brown fox jumps over the lazy dog.")

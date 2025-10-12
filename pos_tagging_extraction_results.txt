@@ -1,0 +1,10 @@
+--- spaCy POS Tagging and Entity Extraction Results ---
+--------------------------------------------------
+Source Text:
+'This is an example web page. It contains some text with various parts of speech.
+ For example, "The cat jumps over the lazy dog" contains a noun, a verb, and prepositions.'
+
+Nouns (11): ['example', 'web', 'page', 'text', 'parts', 'speech', 'example', 'cat', 'dog', 'verb', 'prepositions']
+Verbs (3): ['contains', 'jumps', 'contains']
+Adjectives (2): ['various', 'lazy']
+Entities (0): []
